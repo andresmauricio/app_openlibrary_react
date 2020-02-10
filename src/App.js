@@ -1,26 +1,81 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class TableRows extends React.Component {
+  render() {
+    return (
+      <React.Fragment>
+        {this.props.data.map((value, i) => {
+          return (
+            <tr key={i}>
+              <td>{value.when}</td>
+              <td>{value.who}</td>
+              <td>{value.description}</td>
+            </tr>
+          );
+        })}
+      </React.Fragment>
+    );
+  }
+}
+
+class App extends React.Component {
+  constructor() {
+    super();
+    this.state = { data: [] };
+    this.mappingData = this.mappingData.bind(this);
+  }
+
+  componentDidMount() {
+    this.getData();
+  }
+
+  async getData() {
+    const url = "https://openlibrary.org/recentchanges.json?limit=10";
+    const response = await fetch(url);
+    const data = await response.json();
+    const mappingData = this.mappingData(data);
+    this.setState({ data: mappingData });
+  }
+
+  getDataWithThens() {
+    const url = "https://openlibrary.org/recentchanges.json?limit=10";
+    fetch(url).then(response => {
+      response.json().then(data => {
+        const resutado = this.mappingData(data);
+        this.setState({ data: resutado });
+      });
+    });
+  }
+
+  mappingData(data) {
+    return data.map((value, i) => {
+      return {
+        who: value.author.key,
+        description: value.comment,
+        when: value.timestamp
+      };
+    });
+  }
+
+  render() {
+    return (
+      <div className="container p-4">
+        <h1>{this.props.title}</h1>
+        <table className="table">
+          <thead>
+            <tr>
+              {this.props.headings.map((heading, i) => {
+                return <th key={i}>{heading}</th>;
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            <TableRows data={this.state.data} />
+          </tbody>
+        </table>
+      </div>
+    );
+  }
 }
 
 export default App;
